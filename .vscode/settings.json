@@ -1,0 +1,6 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./sgeme-mir/Cargo.toml",
+        "./sgeme/Cargo.toml"
+    ]
+}

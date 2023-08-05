@@ -1,1 +1,1 @@
-/Users/connorhanley/dev/sgeme/target/debug/sgeme: /Users/connorhanley/dev/sgeme/src/main.rs
+/Users/connorhanley/dev/sgeme/target/debug/sgeme: /Users/connorhanley/dev/sgeme/sgeme/src/datum.rs /Users/connorhanley/dev/sgeme/sgeme/src/eval.rs /Users/connorhanley/dev/sgeme/sgeme/src/expander.rs /Users/connorhanley/dev/sgeme/sgeme/src/main.rs /Users/connorhanley/dev/sgeme/sgeme/src/primsyn.rs /Users/connorhanley/dev/sgeme/sgeme/src/read.rs /Users/connorhanley/dev/sgeme/sgeme/src/token.rs /Users/connorhanley/dev/sgeme/sgeme/src/value.rs

@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"sgeme":[["impl&lt;'s&gt; <a class=\"trait\" href=\"sgeme/token/trait.Logos.html\" title=\"trait sgeme::token::Logos\">Logos</a>&lt;'s&gt; for <a class=\"enum\" href=\"sgeme/token/enum.Token.html\" title=\"enum sgeme::token::Token\">Token</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

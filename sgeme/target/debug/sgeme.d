@@ -1,0 +1,1 @@
+/Users/connorhanley/dev/sgeme/target/debug/sgeme: /Users/connorhanley/dev/sgeme/src/ast.rs /Users/connorhanley/dev/sgeme/src/datum.rs /Users/connorhanley/dev/sgeme/src/expander.rs /Users/connorhanley/dev/sgeme/src/main.rs /Users/connorhanley/dev/sgeme/src/read.rs /Users/connorhanley/dev/sgeme/src/token.rs

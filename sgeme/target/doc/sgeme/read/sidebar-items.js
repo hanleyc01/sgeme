@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ReadError"],"struct":["Reader"],"type":["ReadResult"]};

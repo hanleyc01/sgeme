@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["beef","fnv","logos","logos_codegen","logos_derive","proc_macro2","quote","regex_syntax","sgeme","syn","unicode_ident"];
