@@ -1,3 +1,4 @@
 target/
 .gitignore
 .vscode/
+sgeme/target/
