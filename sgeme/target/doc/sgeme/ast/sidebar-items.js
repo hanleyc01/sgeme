@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Def","Export","Expr","Import","Literal","Stmt"],"struct":["ParsedModule"]};
