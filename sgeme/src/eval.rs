@@ -1,44 +1,37 @@
 //! Convert `Datum` into `Value`
 
+use crate::core_former::{CoreError, CoreFormer};
 use crate::datum::Datum;
-use crate::value::{self, Env, Value};
+use crate::primsyn::*;
+
+use rs_mir::MIRContext;
 
 pub type EvalResult<T> = Result<T, EvalError>;
 
 #[derive(Debug)]
 pub enum EvalError {
     UnboundVariable(String),
+    Simplify(CoreError),
 }
 
-pub struct Evaluator {}
+pub struct Evaluator<'a> {
+    ctx: &'a mut MIRContext,
+}
 
-impl Evaluator {
-    pub fn init() -> Self {
-        Self {}
+impl<'a> Evaluator<'a> {
+    pub fn init(ctx: &'a mut MIRContext) -> Self {
+        Self { ctx }
     }
 
-    pub fn eval(&self, data: &Datum, env: &mut Env) -> EvalResult<Value> {
-        match data {
-            Datum::Bool(b) => Ok(Value::Bool(*b)),
-            Datum::Char(c) => Ok(Value::Char(*c)),
-            Datum::Fixnum(f) => Ok(Value::Fixnum(*f)),
-            Datum::Vector(fs) => {
-                let mut vs = Vec::new();
-                for f in fs {
-                    vs.push(self.eval(f, env)?);
-                }
+    /// Take some `primsyn::Program`, and evaluate using the `rs-mir` crate
+    pub fn compile_program(&mut self, prgrm: &Program) -> EvalResult<()> {
+        // TODO: figure out imports!
+        let _imports: &[Import] = &prgrm.imports;
+        let stmts = &prgrm.stmts;
 
-                Ok(Value::Vector(vs))
-            }
-            Datum::Str(s) => Ok(Value::Str(s.to_owned())),
-            Datum::Symbol(s) => match env.get(s) {
-                None => Err(EvalError::UnboundVariable(s.to_owned())),
-                Some(v) => Ok(v.clone()),
-            },
-            Datum::List(ls) => {
-                todo!()
-            }
-            _ => todo!(),
-        }
+        let core_former = CoreFormer::init();
+        let core_stmts = core_former.simplify(stmts)?;
+
+        Ok(())
     }
 }

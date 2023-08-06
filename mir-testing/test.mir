@@ -1,0 +1,16 @@
+M0:	module
+proto0:	proto	i32
+test:	func	i32
+
+# 0 args, 0 locals
+	ret	42
+	endfunc
+	export	test
+main:	func	i32
+	local	i64:i_0
+# 0 args, 1 local
+	call	proto0, test, i_0
+	ret	0
+	endfunc
+	export	main
+	endmodule

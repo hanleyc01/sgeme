@@ -62,8 +62,7 @@ impl Expander {
             },
             Datum::Symbol(s) => Ok(Expr::Symbol(s.clone())),
             Datum::List(ds) => match ds.split_first() {
-                Some((head, tail)) => {
-                 match head {
+                Some((head, tail)) => match head {
                     Datum::Symbol(s) => match s.as_ref() {
                         "define" => Err(ExpanderError::IllegalContext(
                             "can't define `define` there dummy".into(),
@@ -102,7 +101,6 @@ impl Expander {
                         }
                         Ok(Expr::ProcCall(Box::new(rator), rand))
                     }
-                }
                 },
                 None => return Err(ExpanderError::IllegalNonatomic("()".to_string())),
             },
@@ -474,64 +472,111 @@ impl Expander {
         self.when_unless_helper(ds, |(x, ys)| Expr::Unless(Box::new(x), ys))
     }
 
-    fn expand_let_branches(&self, ds: &[Datum]) -> ExpanderResult<Vec<(String, Expr)>> {
-        let mut branches = Vec::new();
-        for datum in ds {
-            if let Datum::List(ls) = datum {
-                if let Some((name, body, rst)) = split_three(ls) {
-                    if !rst.is_empty() {
-                        return Err(ExpanderError::IllegalNumberOfArgs(
-                            "<let> and <letrec> forms need to assign things lmao get it right"
-                                .into(),
-                        ));
-                    }
-
-                    if let Datum::Symbol(n) = name {
-                        let nm = n.to_string();
-                        let body_expr = self.expand_expr(body)?;
-                        branches.push((nm, body_expr))
-                    } else {
-                        return Err(ExpanderError::ListExpected(
-                            "<let> and <letrec> forms need to assign things lmao get it right"
-                                .into(),
-                        ));
-                    }
-                } else {
-                    return Err(ExpanderError::ListExpected(
-                        "<let> and <letrec> forms need to assign things lmao get it right".into(),
-                    ));
-                }
-            } else {
-                return Err(ExpanderError::ListExpected(
-                    "<let> and <letrec> forms need to assign things lmao get it right".into(),
-                ));
-            }
-        }
-        Ok(branches)
-    }
-
     /// Expand a datum of the form `(let ((ident expr) ...) expr)` to `primsyn::Expr::Let`
     fn expand_let(&self, ds: &[Datum]) -> ExpanderResult<Expr> {
-        if let Some((body, branches)) = ds.split_last() {
-            let branchaises = self.expand_let_branches(branches)?;
-            let body_expr = self.expand_expr(body)?;
-            Ok(Expr::Let(branchaises, Box::new(body_expr)))
+        if let Some((branches, bs)) = ds.split_first() {
+            if let Datum::List(ls) = branches {
+                if let Some((body, rst)) = bs.split_first() {
+                    if !rst.is_empty() {
+                        return Err(ExpanderError::IllegalNumberOfArgs(
+                            "(let ((<ident> <expr>) ...) <expr>) ; nothing else!!".into(),
+                        ));
+                    }
+
+                    let mut branch_assignments = Vec::new();
+                    for branch in ls {
+                        if let Datum::List(r#as) = branch {
+                            if r#as.len() == 2 {
+                                let name = r#as[0].clone();
+                                let assign = r#as[1].clone();
+                                if name.is_symbol() {
+                                    let name_sym = name.get_symbol_name();
+                                    let assign_expr = self.expand_expr(&assign)?;
+                                    branch_assignments.push((name_sym, assign_expr))
+                                } else {
+                                    return Err(ExpanderError::IdentifierExpected("(<ident> <expr>) ; identifier expected to be assignmed to in let-expression".into()));
+                                }
+                            } else {
+                                return Err(ExpanderError::IllegalNumberOfArgs(
+                                    "(<ident> <expr>) ; branch assignments only contain two items"
+                                        .into(),
+                                ));
+                            }
+                        } else {
+                            return Err(ExpanderError::ListExpected("(let ((<ident> <expr>)...) ...) ; list expected for let-branch assignment".into()));
+                        }
+                    }
+
+                    let body_expr = self.expand_expr(body)?;
+
+                    Ok(Expr::Let(branch_assignments, Box::new(body_expr)))
+                } else {
+                    Err(ExpanderError::IllegalNumberOfArgs("(let ((<ident> <expr>) ...) <expr>) ; need binding body expression for let expression".into()))
+                }
+            } else {
+                Err(ExpanderError::ListExpected(
+                    "(let ((<ident> <expr>) ...) ...) ; list expected for `let` branches".into(),
+                ))
+            }
         } else {
             Err(ExpanderError::IllegalNumberOfArgs(
-                "(let ((<ident> <expr>) ...) <expr>) ; reminder of `let` form bruv".into(),
+                "(let ((<ident> <expr>) ...) ...) ; need branches and body in let expression"
+                    .into(),
             ))
         }
     }
 
     /// Expand a datum of the form `(letrec ((ident expr) ...) expr)` to `primsyn::Expr::LetRec`
     fn expand_letrec(&self, ds: &[Datum]) -> ExpanderResult<Expr> {
-        if let Some((body, branches)) = ds.split_last() {
-            let branchaises = self.expand_let_branches(branches)?;
-            let body_expr = self.expand_expr(body)?;
-            Ok(Expr::Let(branchaises, Box::new(body_expr)))
+        if let Some((branches, bs)) = ds.split_first() {
+            if let Datum::List(ls) = branches {
+                if let Some((body, rst)) = bs.split_first() {
+                    if !rst.is_empty() {
+                        return Err(ExpanderError::IllegalNumberOfArgs(
+                            "(letrec ((<ident> <expr>) ...) <expr>) ; nothing else!!".into(),
+                        ));
+                    }
+
+                    let mut branch_assignments = Vec::new();
+                    for branch in ls {
+                        if let Datum::List(r#as) = branch {
+                            if r#as.len() == 2 {
+                                let name = r#as[0].clone();
+                                let assign = r#as[1].clone();
+                                if name.is_symbol() {
+                                    let name_sym = name.get_symbol_name();
+                                    let assign_expr = self.expand_expr(&assign)?;
+                                    branch_assignments.push((name_sym, assign_expr))
+                                } else {
+                                    return Err(ExpanderError::IdentifierExpected("(<ident> <expr>) ; identifier expected to be assignmed to in letrec-expression".into()));
+                                }
+                            } else {
+                                return Err(ExpanderError::IllegalNumberOfArgs(
+                                    "(<ident> <expr>) ; branch assignments only contain two items"
+                                        .into(),
+                                ));
+                            }
+                        } else {
+                            return Err(ExpanderError::ListExpected("(letrec ((<ident> <expr>)...) ...) ; list expected for let-branch assignment".into()));
+                        }
+                    }
+
+                    let body_expr = self.expand_expr(body)?;
+
+                    Ok(Expr::LetRec(branch_assignments, Box::new(body_expr)))
+                } else {
+                    Err(ExpanderError::IllegalNumberOfArgs("(letrec ((<ident> <expr>) ...) <expr>) ; need binding body expression for letrec expression".into()))
+                }
+            } else {
+                Err(ExpanderError::ListExpected(
+                    "(letrec ((<ident> <expr>) ...) ...) ; list expected for `letrec` branches"
+                        .into(),
+                ))
+            }
         } else {
             Err(ExpanderError::IllegalNumberOfArgs(
-                "(letrec ((<ident> <expr>) ...) <expr>) ; reminder of `let` form bruv".into(),
+                "(letrec ((<ident> <expr>) ...) ...) ; need branches and body in letrec expression"
+                    .into(),
             ))
         }
     }
